@@ -68,6 +68,15 @@ jobs:
       
       - name: Image digest
         run: echo "Appointment Service image pushed successfully!"
+
+  deploy-appointment-service:
+    needs: [detect-changes, build-appointment-service]
+    if: needs.detect-changes.outputs.appointment-service == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
       
       - name: Azure Login
         uses: azure/login@v1
@@ -91,7 +100,9 @@ jobs:
       
       - name: Deploy Appointment Service to AKS
         run: |
-          # Update image tag in deployment
+          # Update namespace and image tag in deployment
+          sed -i "s|namespace: dev|namespace: ${{ env.NAMESPACE }}|g" k8s-deployments/appointment-deployment-dev.yaml
+          sed -i "s|namespace: dev|namespace: ${{ env.NAMESPACE }}|g" k8s-deployments/appointment-service-dev.yaml
           sed -i "s|image: .*appointment-service.*|image: ${{ env.ACR_LOGIN_SERVER }}/appointment-service:${{ github.sha }}|g" k8s-deployments/appointment-deployment-dev.yaml
           
           # Apply deployment and service
@@ -99,17 +110,17 @@ jobs:
           kubectl apply -f k8s-deployments/appointment-service-dev.yaml -n ${{ env.NAMESPACE }}
           
           # Wait for rollout
-          kubectl rollout status deployment/appointment-service -n ${{ env.NAMESPACE }} --timeout=5m
+          kubectl rollout status deployment/appointment-service-dev -n ${{ env.NAMESPACE }} --timeout=5m
           
           echo "Appointment Service deployed successfully to AKS!"
       
       - name: Get Appointment Service Status
         run: |
           echo "===== Appointment Service Deployment ====="
-          kubectl get deployment -n ${{ env.NAMESPACE }} -l app=appointment-service
+          kubectl get deployment -n ${{ env.NAMESPACE }} -l app=appointment-service-dev
           echo ""
           echo "===== Appointment Service Pods ====="
-          kubectl get pods -n ${{ env.NAMESPACE }} -l app=appointment-service
+          kubectl get pods -n ${{ env.NAMESPACE }} -l app=appointment-service-dev
 
   build-patient-service:
     needs: detect-changes
@@ -140,6 +151,15 @@ jobs:
       
       - name: Image digest
         run: echo "Patient Service image pushed successfully!"
+
+  deploy-patient-service:
+    needs: [detect-changes, build-patient-service]
+    if: needs.detect-changes.outputs.patient-service == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
       
       - name: Azure Login
         uses: azure/login@v1
@@ -163,7 +183,9 @@ jobs:
       
       - name: Deploy Patient Service to AKS
         run: |
-          # Update image tag in deployment
+          # Update namespace and image tag in deployment
+          sed -i "s|namespace: dev|namespace: ${{ env.NAMESPACE }}|g" k8s-deployments/patient-deployment-dev.yaml
+          sed -i "s|namespace: dev|namespace: ${{ env.NAMESPACE }}|g" k8s-deployments/patient-service-dev.yaml
           sed -i "s|image: .*patient-service.*|image: ${{ env.ACR_LOGIN_SERVER }}/patient-service:${{ github.sha }}|g" k8s-deployments/patient-deployment-dev.yaml
           
           # Apply deployment and service
@@ -171,14 +193,14 @@ jobs:
           kubectl apply -f k8s-deployments/patient-service-dev.yaml -n ${{ env.NAMESPACE }}
           
           # Wait for rollout
-          kubectl rollout status deployment/patient-service -n ${{ env.NAMESPACE }} --timeout=5m
+          kubectl rollout status deployment/patient-service-dev -n ${{ env.NAMESPACE }} --timeout=5m
           
           echo "Patient Service deployed successfully to AKS!"
       
       - name: Get Patient Service Status
         run: |
           echo "===== Patient Service Deployment ====="
-          kubectl get deployment -n ${{ env.NAMESPACE }} -l app=patient-service
+          kubectl get deployment -n ${{ env.NAMESPACE }} -l app=patient-service-dev
           echo ""
           echo "===== Patient Service Pods ====="
-          kubectl get pods -n ${{ env.NAMESPACE }} -l app=patient-service
+          kubectl get pods -n ${{ env.NAMESPACE }} -l app=patient-service-dev

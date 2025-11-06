@@ -14,11 +14,6 @@ on:
       - 'appointment-service/**'
       - 'patient-service/**'
 
-env:
-  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
-  ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-  ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
@@ -49,20 +44,20 @@ jobs:
       - name: Login to Azure Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.ACR_LOGIN_SERVER }}
-          username: ${{ env.ACR_USERNAME }}
-          password: ${{ env.ACR_PASSWORD }}
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
       
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.ACR_LOGIN_SERVER }}/appointment-service:${{ github.sha }} \
-                       -t ${{ env.ACR_LOGIN_SERVER }}/appointment-service:latest \
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/appointment-service:${{ github.sha }} \
+                       -t ${{ secrets.ACR_LOGIN_SERVER }}/appointment-service:latest \
                        ./appointment-service
       
       - name: Push Docker image to ACR
         run: |
-          docker push ${{ env.ACR_LOGIN_SERVER }}/appointment-service:${{ github.sha }}
-          docker push ${{ env.ACR_LOGIN_SERVER }}/appointment-service:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/appointment-service:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/appointment-service:latest
       
       - name: Image digest
         run: echo "Appointment Service image pushed successfully!"
@@ -79,20 +74,20 @@ jobs:
       - name: Login to Azure Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.ACR_LOGIN_SERVER }}
-          username: ${{ env.ACR_USERNAME }}
-          password: ${{ env.ACR_PASSWORD }}
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
       
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.ACR_LOGIN_SERVER }}/patient-service:${{ github.sha }} \
-                       -t ${{ env.ACR_LOGIN_SERVER }}/patient-service:latest \
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/patient-service:${{ github.sha }} \
+                       -t ${{ secrets.ACR_LOGIN_SERVER }}/patient-service:latest \
                        ./patient-service
       
       - name: Push Docker image to ACR
         run: |
-          docker push ${{ env.ACR_LOGIN_SERVER }}/patient-service:${{ github.sha }}
-          docker push ${{ env.ACR_LOGIN_SERVER }}/patient-service:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/patient-service:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/patient-service:latest
       
       - name: Image digest
         run: echo "Patient Service image pushed successfully!"

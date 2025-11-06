@@ -2,11 +2,11 @@ name: Appointment Service CI/CD Pipeline
  
 on:
   push:
-    branches: [ main ]
+    branches: [ test ]
    #paths:
    #   - 'patient-service/**'
   pull_request:
-    branches: [ main ]
+    branches: [ test ]
    # paths:
    #  - 'patient-service/**'
  

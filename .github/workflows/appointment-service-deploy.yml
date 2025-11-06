@@ -4,7 +4,7 @@ on:
     workflows: ["Appointment Service CI/CD Pipeline"]
     types:
       - completed
-    branches: [main]
+    branches: [test]
   workflow_dispatch:
     inputs:
       environment:

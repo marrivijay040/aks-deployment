@@ -121,6 +121,12 @@ jobs:
           echo ""
           echo "===== Appointment Service Pods ====="
           kubectl get pods -n ${{ env.NAMESPACE }} -l app=appointment-service-dev
+          echo ""
+          echo "===== Appointment Service ====="
+          kubectl get service -n ${{ env.NAMESPACE }} -l app=appointment-service-dev
+          echo ""
+          echo "===== All Services in ${{ env.NAMESPACE }} Namespace ====="
+          kubectl get service -n ${{ env.NAMESPACE }}
 
   build-patient-service:
     needs: detect-changes
@@ -204,3 +210,9 @@ jobs:
           echo ""
           echo "===== Patient Service Pods ====="
           kubectl get pods -n ${{ env.NAMESPACE }} -l app=patient-service-dev
+          echo ""
+          echo "===== Patient Service ====="
+          kubectl get service -n ${{ env.NAMESPACE }} -l app=patient-service-dev
+          echo ""
+          echo "===== All Services in ${{ env.NAMESPACE }} Namespace ====="
+          kubectl get service -n ${{ env.NAMESPACE }}

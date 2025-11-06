@@ -1,0 +1,98 @@
+name: CI Pipeline - Build and Push to ACR
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'appointment-service/**'
+      - 'patient-service/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'appointment-service/**'
+      - 'patient-service/**'
+
+env:
+  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+  ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+  ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      appointment-service: ${{ steps.filter.outputs.appointment-service }}
+      patient-service: ${{ steps.filter.outputs.patient-service }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            appointment-service:
+              - 'appointment-service/**'
+            patient-service:
+              - 'patient-service/**'
+
+  build-appointment-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.appointment-service == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
+          username: ${{ env.ACR_USERNAME }}
+          password: ${{ env.ACR_PASSWORD }}
+      
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/appointmentservice:${{ github.sha }} \
+                       -t ${{ env.ACR_LOGIN_SERVER }}/appointmentservice:latest \
+                       ./appointment-service
+      
+      - name: Push Docker image to ACR
+        run: |
+          docker push ${{ env.ACR_LOGIN_SERVER }}/appointmentservice:${{ github.sha }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/appointmentservice:latest
+      
+      - name: Image digest
+        run: echo "Appointment Service image pushed successfully!"
+
+  build-patient-service:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.patient-service == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
+          username: ${{ env.ACR_USERNAME }}
+          password: ${{ env.ACR_PASSWORD }}
+      
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/patientservice:${{ github.sha }} \
+                       -t ${{ env.ACR_LOGIN_SERVER }}/patientservice:latest \
+                       ./patient-service
+      
+      - name: Push Docker image to ACR
+        run: |
+          docker push ${{ env.ACR_LOGIN_SERVER }}/patientservice:${{ github.sha }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/patientservice:latest
+      
+      - name: Image digest
+        run: echo "Patient Service image pushed successfully!"
